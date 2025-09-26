@@ -1,0 +1,38 @@
+from code_translator import translate_code
+
+# DEMO RÁPIDA - Ejemplos automáticos sin input del usuario
+
+print("=== DEMO RÁPIDA DEL TRADUCTOR ===\n")
+
+# Ejemplo 1: Python simple
+print("1. PYTHON -> JAVASCRIPT")
+print("-" * 30)
+python_code = """def suma(a, b):
+    resultado = a + b
+    print("El resultado es:", resultado)
+    return resultado"""
+
+print("CÓDIGO PYTHON:")
+print(python_code)
+print("\nCÓDIGO JAVASCRIPT:")
+js_result = translate_code(python_code, "python", "javascript")
+print(js_result)
+
+print("\n" + "="*50 + "\n")
+
+# Ejemplo 2: Bash simple
+print("2. BASH -> POWERSHELL")
+print("-" * 30)
+bash_code = """nombre="Usuario"
+echo "Hola $nombre"
+ls
+mkdir carpeta_nueva"""
+
+print("CÓDIGO BASH:")
+print(bash_code)
+print("\nCÓDIGO POWERSHELL:")
+ps_result = translate_code(bash_code, "bash", "powershell")
+print(ps_result)
+
+print("\n" + "="*50)
+print("¡Demo completada! Ahora puedes usar traductor_simple.py para tus propios códigos.")
