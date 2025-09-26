@@ -1,0 +1,130 @@
+import re
+from abc import ABC, abstractmethod
+
+class CodeTranslator(ABC):
+    @abstractmethod
+    def translate(self, code: str) -> str:
+        pass
+
+class PythonToJavaScriptTranslator(CodeTranslator):
+    def translate(self, code: str) -> str:
+        # Variables y asignaciones
+        code = re.sub(r'(\w+)\s*=\s*', r'let \1 = ', code)
+        
+        # Print statements
+        code = re.sub(r'print\((.*?)\)', r'console.log(\1)', code)
+        
+        # Funciones
+        code = re.sub(r'def\s+(\w+)\s*\((.*?)\):', r'function \1(\2) {', code)
+        
+        # If statements
+        code = re.sub(r'if\s+(.*?):', r'if (\1) {', code)
+        code = re.sub(r'elif\s+(.*?):', r'} else if (\1) {', code)
+        code = re.sub(r'else:', r'} else {', code)
+        
+        # For loops
+        code = re.sub(r'for\s+(\w+)\s+in\s+range\((\d+)\):', r'for (let \1 = 0; \1 < \2; \1++) {', code)
+        
+        # While loops
+        code = re.sub(r'while\s+(.*?):', r'while (\1) {', code)
+        
+        # Listas
+        code = re.sub(r'\.append\((.*?)\)', r'.push(\1)', code)
+        
+        # Agregar llaves de cierre
+        lines = code.split('\n')
+        result = []
+        indent_level = 0
+        
+        for line in lines:
+            stripped = line.strip()
+            if stripped:
+                if any(keyword in stripped for keyword in ['function', 'if', 'else', 'for', 'while']):
+                    result.append('  ' * indent_level + stripped)
+                    if stripped.endswith('{'):
+                        indent_level += 1
+                else:
+                    result.append('  ' * indent_level + stripped + ';')
+        
+        # Cerrar llaves
+        while indent_level > 0:
+            indent_level -= 1
+            result.append('  ' * indent_level + '}')
+        
+        return '\n'.join(result)
+
+class BashToPowerShellTranslator(CodeTranslator):
+    def translate(self, code: str) -> str:
+        # Variables
+        code = re.sub(r'(\w+)=([^;\n]+)', r'$\1 = \2', code)
+        
+        # Echo
+        code = re.sub(r'echo\s+(.*)', r'Write-Host \1', code)
+        
+        # Comandos de archivos
+        code = re.sub(r'ls\b', 'Get-ChildItem', code)
+        code = re.sub(r'cat\s+(\S+)', r'Get-Content \1', code)
+        code = re.sub(r'mkdir\s+(\S+)', r'New-Item -ItemType Directory -Path \1', code)
+        code = re.sub(r'rm\s+(\S+)', r'Remove-Item \1', code)
+        code = re.sub(r'cp\s+(\S+)\s+(\S+)', r'Copy-Item \1 \2', code)
+        code = re.sub(r'mv\s+(\S+)\s+(\S+)', r'Move-Item \1 \2', code)
+        
+        # If statements
+        code = re.sub(r'if\s+\[\s*(.*?)\s*\]', r'if (\1)', code)
+        
+        # Loops
+        code = re.sub(r'for\s+(\w+)\s+in\s+(.*?);?\s*do', r'foreach ($\1 in \2) {', code)
+        code = re.sub(r'while\s+\[\s*(.*?)\s*\];?\s*do', r'while (\1) {', code)
+        
+        # Reemplazar 'fi' y 'done' con '}'
+        code = re.sub(r'\bfi\b', '}', code)
+        code = re.sub(r'\bdone\b', '}', code)
+        
+        return code
+
+class CodeTranslatorFactory:
+    translators = {
+        ('python', 'javascript'): PythonToJavaScriptTranslator(),
+        ('bash', 'powershell'): BashToPowerShellTranslator(),
+    }
+    
+    @classmethod
+    def get_translator(cls, from_lang: str, to_lang: str) -> CodeTranslator:
+        key = (from_lang.lower(), to_lang.lower())
+        if key in cls.translators:
+            return cls.translators[key]
+        raise ValueError(f"Traductor no disponible para {from_lang} -> {to_lang}")
+
+def translate_code(code: str, from_lang: str, to_lang: str) -> str:
+    translator = CodeTranslatorFactory.get_translator(from_lang, to_lang)
+    return translator.translate(code)
+
+# Función principal para usar el traductor
+def main():
+    print("=== Traductor de Código ===")
+    print("Lenguajes soportados:")
+    print("- Python -> JavaScript")
+    print("- Bash -> PowerShell")
+    
+    from_lang = input("\nLenguaje origen: ").strip()
+    to_lang = input("Lenguaje destino: ").strip()
+    
+    print("\nIngresa tu código (termina con una línea vacía):")
+    code_lines = []
+    while True:
+        line = input()
+        if line == "":
+            break
+        code_lines.append(line)
+    
+    code = '\n'.join(code_lines)
+    
+    try:
+        translated = translate_code(code, from_lang, to_lang)
+        print(f"\n=== Código traducido ({from_lang} -> {to_lang}) ===")
+        print(translated)
+    except ValueError as e:
+        print(f"Error: {e}")
+
+if __name__ == "__main__":
+    main()
