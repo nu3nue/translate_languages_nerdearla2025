@@ -2,7 +2,6 @@
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/91edac64-7379-48dc-9b44-8449531d74f1" />
 
-**Un traductor automático que convierte código entre diferentes lenguajes de programación**
 
 ## 🚀 Lenguajes Soportados
 
